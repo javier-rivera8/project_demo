@@ -4,8 +4,16 @@ import smbus
 import time,random
 import math
 
+"""Controlador I2C para Raspbot y efectos de iluminacion WS2812.
+
+Este modulo expone:
+- `Raspbot`: control de motores, servos, tiras LED, IR, buzzer y ultrasonido.
+- `LightShow`: efectos de luces predefinidos sobre la barra LED.
+"""
+
 PI5Car_I2CADDR = 0x2B
 class Raspbot():
+    """API de bajo nivel para controlar el coche via I2C."""
 
     def get_i2c_device(self, address, i2c_bus):
         self._addr = address
@@ -18,7 +26,7 @@ class Raspbot():
         # Create I2C device.
         self._device = self.get_i2c_device(PI5Car_I2CADDR, 1)
 
-    #写数据
+    # Escritura de datos
     def write_u8(self, reg, data):
         try:
             self._device.write_byte_data(self._addr, reg, data)
@@ -38,7 +46,7 @@ class Raspbot():
         except:
             print ('write_array I2C error')
 
-   #读数据
+    # Lectura de datos
     def read_data_byte(self):
         try:
             buf = self._device.write_byte(self._addr)
@@ -54,10 +62,10 @@ class Raspbot():
             print ('read_u8 I2C error')
 
 
-#控制电机
+# Control del motor
     def Ctrl_Car(self, motor_id, motor_dir,motor_speed):
         try:
-            if(motor_dir !=1)and(motor_dir != 0):  #参数非法,方向默认前进
+            if(motor_dir !=1)and(motor_dir != 0):  # Si la direccion no es valida, avanza por defecto
                 motor_dir = 0
             if(motor_speed>255):
                 motor_speed = 255
@@ -70,7 +78,7 @@ class Raspbot():
         except:
             print ('Ctrl_Car I2C error')
 
-#控制电机正反(-255~255)
+# Control de motor bidireccional (-255~255)
     def Ctrl_Muto(self, motor_id, motor_speed):
         try:
 
@@ -78,7 +86,7 @@ class Raspbot():
                 motor_speed = 255
             if(motor_speed<-255):
                 motor_speed = -255
-            if(motor_speed < 0 and motor_speed >= -255): #速度如果是负数则后退
+            if(motor_speed < 0 and motor_speed >= -255): # Si la velocidad es negativa, va en reversa
                 motor_dir = 1
             else:motor_dir = 0
             reg = 0x01
@@ -87,7 +95,7 @@ class Raspbot():
         except:
             print ('Ctrl_Car I2C error')
 
-#控制舵机
+# Control del servo
     def Ctrl_Servo(self, id, angle):
         try:
             reg = 0x02
@@ -101,7 +109,7 @@ class Raspbot():
         except:
             print ('Ctrl_Servo I2C error')
 
-#控制灯珠(全部)
+# Control de LEDs (todos)
     def Ctrl_WQ2812_ALL(self, state, color):
         try:
             reg = 0x03
@@ -114,7 +122,7 @@ class Raspbot():
         except:
             print ('Ctrl_WQ2812 I2C error')
 
-#单独控制灯珠
+# Control individual de LED
     def Ctrl_WQ2812_Alone(self, number,state, color):
         try:
             reg = 0x04
@@ -127,7 +135,7 @@ class Raspbot():
         except:
             print ('Ctrl_WQ2812_Alone I2C error')
 
-#控制亮度(全部)
+# Control de brillo (todos)
     def Ctrl_WQ2812_brightness_ALL(self, R, G, B):
         try:
             reg = 0x08
@@ -142,7 +150,7 @@ class Raspbot():
         except:
             print ('Ctrl_WQ2812 I2C error') 
 
-#单独灯珠亮度
+# Brillo de LED individual
     def Ctrl_WQ2812_brightness_Alone(self, number, R, G, B):
         try:
             reg = 0x09
@@ -157,7 +165,7 @@ class Raspbot():
         except:
             print ('Ctrl_WQ2812_Alone I2C error') 
 
-#控制红外遥控器开关
+# Control del interruptor IR
     def Ctrl_IR_Switch(self, state):
         try:
             reg = 0x05
@@ -170,7 +178,7 @@ class Raspbot():
         except:
             print ('Ctrl_IR_Switch I2C error')
 
-#控制蜂鸣器开关
+# Control del interruptor del buzzer
     def Ctrl_BEEP_Switch(self, state):
         try:
             reg = 0x06
@@ -183,7 +191,7 @@ class Raspbot():
         except:
             print ('Ctrl_BEEP_Switch I2C error')
 
-#控制超声波测距开关
+# Control del interruptor de ultrasonido
     def Ctrl_Ulatist_Switch(self, state):
         try:
             reg = 0x07
@@ -199,8 +207,9 @@ class Raspbot():
 
 
 
-#控制灯珠特效
+# Efectos de luz para LEDs
 class LightShow:
+    """Coleccion de efectos visuales para la barra de 14 LEDs."""
     
     def __init__(self):
         self.num_lights = 14
@@ -395,7 +404,7 @@ class LightShow:
 # test
 #car = Raspbot()
 
-#读取巡线传感器地址 ,此值只有1位
+# Lectura del sensor de seguimiento de linea (1 byte)
 # track =car.read_data_array(0x0a,1)
 # track = int(track[0])
 # x1 = (track>>3)&0x01
@@ -405,7 +414,7 @@ class LightShow:
 # print(track,x1,x2,x3,x4)
 
 
-# 读取超声传感器地址,此值只有2位 
+# Lectura del sensor ultrasonico (2 bytes)
 # car.Ctrl_Ulatist_Switch(1)#open
 # time.sleep(1) 
 # diss_H =car.read_data_array(0x1b,1)[0]
@@ -414,7 +423,7 @@ class LightShow:
 # print(dis+"mm") 
 # car.Ctrl_Ulatist_Switch(0)#close
 
-#读取红外遥控的值
+# Lectura del valor del control remoto IR
 # car.Ctrl_IR_Switch(1)
 # time.sleep(3)
 # data =car.read_data_array(0x0c,1)
@@ -422,58 +431,58 @@ class LightShow:
 # car.Ctrl_IR_Switch(0)
 
 
-#蜂鸣器测试
+# Prueba del buzzer
 # car.Ctrl_BEEP_Switch(1)
 # time.sleep(1)
 # car.Ctrl_BEEP_Switch(0)
 # time.sleep(1)
 
 
-#电机测试
-# car.Ctrl_Car(0,0,150) #L1电机 前进 150速度
-# car.Ctrl_Car(1,0,150) #L2电机 前进 150速度
-# car.Ctrl_Car(2,0,150) #R1电机 前进 150速度
-# car.Ctrl_Car(3,0,150) #R2电机 前进 150速度
+# Prueba de motores
+# car.Ctrl_Car(0,0,150) # Motor L1 avanza a velocidad 150
+# car.Ctrl_Car(1,0,150) # Motor L2 avanza a velocidad 150
+# car.Ctrl_Car(2,0,150) # Motor R1 avanza a velocidad 150
+# car.Ctrl_Car(3,0,150) # Motor R2 avanza a velocidad 150
 # time.sleep(1)
-# car.Ctrl_Car(0,1,50) #L1电机 后退 50速度
+# car.Ctrl_Car(0,1,50) # Motor L1 retrocede a velocidad 50
 # time.sleep(1)
-# car.Ctrl_Car(0,0,0) #L1电机 停止
-# car.Ctrl_Car(1,0,0) #L2电机 停止
-# car.Ctrl_Car(2,0,0) #R1电机 停止
-# car.Ctrl_Car(3,0,0) #R2电机 停止
+# car.Ctrl_Car(0,0,0) # Motor L1 detenido
+# car.Ctrl_Car(1,0,0) # Motor L2 detenido
+# car.Ctrl_Car(2,0,0) # Motor R1 detenido
+# car.Ctrl_Car(3,0,0) # Motor R2 detenido
 
 
-#舵机测试
-# car.Ctrl_Servo(1,0) #s1 0度
-# car.Ctrl_Servo(2,180) #s2 180度
+# Prueba de servos
+# car.Ctrl_Servo(1,0) # Servo s1 a 0 grados
+# car.Ctrl_Servo(2,180) # Servo s2 a 180 grados
 # time.sleep(1)
-# car.Ctrl_Servo(1,180) #s1 180度
-# car.Ctrl_Servo(2,0) #s2 0度
+# car.Ctrl_Servo(1,180) # Servo s1 a 180 grados
+# car.Ctrl_Servo(2,0) # Servo s2 a 0 grados
 # time.sleep(1)
 
-#灯条测试
-# car.Ctrl_WQ2812_ALL(1,0)#红色
+# Prueba de la barra LED
+# car.Ctrl_WQ2812_ALL(1,0)#rojo
 # time.sleep(1)
-# car.Ctrl_WQ2812_ALL(1,1)#绿色
+# car.Ctrl_WQ2812_ALL(1,1)#verde
 # time.sleep(1)
-# car.Ctrl_WQ2812_ALL(1,2)#蓝色
+# car.Ctrl_WQ2812_ALL(1,2)#azul
 # time.sleep(1)
-# car.Ctrl_WQ2812_ALL(1,3)#黄色
+# car.Ctrl_WQ2812_ALL(1,3)#amarillo
 # time.sleep(1)
-# car.Ctrl_WQ2812_ALL(0,0) #关闭
+# car.Ctrl_WQ2812_ALL(0,0) #apagar
 
-#单个灯测试
-# car.Ctrl_WQ2812_Alone(1,1,0)#1号红色
+# Prueba de LED individual
+# car.Ctrl_WQ2812_Alone(1,1,0)#LED 1 rojo
 # time.sleep(1)
-# car.Ctrl_WQ2812_Alone(2,1,3)#1号黄色
+# car.Ctrl_WQ2812_Alone(2,1,3)#LED 2 amarillo
 # time.sleep(1)
-# car.Ctrl_WQ2812_Alone(1,0,3)#1号关
+# car.Ctrl_WQ2812_Alone(1,0,3)#LED 1 apagado
 # time.sleep(1)
-# car.Ctrl_WQ2812_Alone(14,1,2)#14号绿色
+# car.Ctrl_WQ2812_Alone(14,1,2)#LED 14 verde
 # time.sleep(1)
-# car.Ctrl_WQ2812_ALL(0,0) #关闭
+# car.Ctrl_WQ2812_ALL(0,0) #apagar
         
-#控制亮度测试 全部
+# Prueba de brillo (todos)
 # for i in range(255):
 #     car.Ctrl_WQ2812_brightness_ALL(i,0,0)
 #     time.sleep(0.01)
